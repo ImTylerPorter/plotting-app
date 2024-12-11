@@ -3,10 +3,14 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	export let message: string;
-	export let onClose: () => void;
+	interface Props {
+		message: string;
+		onClose: () => void;
+	}
 
-	let visible = true;
+	let { message, onClose }: Props = $props();
+
+	let visible = $state(true);
 
 	onMount(() => {
 		const timer = setTimeout(() => {
@@ -24,7 +28,7 @@
 		class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg flex items-center"
 	>
 		<span>{message}</span>
-		<button on:click={() => (visible = false)} class="ml-2">
+		<button onclick={() => (visible = false)} class="ml-2">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				class="h-5 w-5"

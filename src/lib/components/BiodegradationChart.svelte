@@ -1,23 +1,25 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import type { BiodegradationSample } from '$lib/types';
 	import { browser } from '$app/environment';
 
-	export let data: BiodegradationSample[] = [];
-	export let onPointClick: (sample: BiodegradationSample) => void;
-	export let onHover: (sample: BiodegradationSample | null) => void;
+	interface Props {
+		data?: BiodegradationSample[];
+		onPointClick: (sample: BiodegradationSample) => void;
+		onHover: (sample: BiodegradationSample | null) => void;
+	}
 
-	let chartDiv: HTMLDivElement;
-	let Plotly: any;
+	let { data = [], onPointClick, onHover }: Props = $props();
+
+	let chartDiv: HTMLDivElement = $state();
+	let Plotly: any = $state();
 
 	async function loadPlotly() {
 		if (browser) {
 			Plotly = await import('plotly.js-dist-min');
 		}
-	}
-
-	$: if (chartDiv && data && Plotly) {
-		updateChart();
 	}
 
 	function updateChart() {
@@ -98,6 +100,11 @@
 			}
 		};
 	});
+	run(() => {
+		if (chartDiv && data && Plotly) {
+			updateChart();
+		}
+	});
 </script>
 
-<div bind:this={chartDiv} class="w-full h-[600px]" />
+<div bind:this={chartDiv} class="w-full h-[600px]"></div>

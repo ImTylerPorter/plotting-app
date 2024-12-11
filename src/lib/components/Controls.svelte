@@ -2,14 +2,23 @@
 <script lang="ts">
 	import type { FilterEventDetail, SimulateEventDetail } from '$lib/types';
 
-	export let materialTypes: string[];
-	export let environments: string[];
-	export let onFilter: (detail: FilterEventDetail) => void;
-	export let onSimulate: (detail: SimulateEventDetail) => void;
+	interface Props {
+		materialTypes: string[];
+		environments: string[];
+		onFilter: (detail: FilterEventDetail) => void;
+		onSimulate: (detail: SimulateEventDetail) => void;
+	}
 
-	let selectedMaterial = '';
-	let selectedEnvironment = '';
-	let simulationDays = 30;
+	let {
+		materialTypes,
+		environments,
+		onFilter,
+		onSimulate
+	}: Props = $props();
+
+	let selectedMaterial = $state('');
+	let selectedEnvironment = $state('');
+	let simulationDays = $state(30);
 
 	function handleFilter() {
 		onFilter({ material: selectedMaterial, environment: selectedEnvironment });
@@ -48,7 +57,7 @@
 		</select>
 
 		<button
-			on:click={handleFilter}
+			onclick={handleFilter}
 			class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium p-2 rounded-md"
 		>
 			Apply Filters
@@ -70,12 +79,12 @@
 			max="200"
 			step="1"
 			bind:value={simulationDays}
-			on:change={handleSimulation}
+			onchange={handleSimulation}
 			class="w-full appearance-none h-2 bg-gray-700 rounded-lg focus:outline-none focus:ring focus:ring-green-500"
 		/>
 
 		<button
-			on:click={handleSimulation}
+			onclick={handleSimulation}
 			class="w-full bg-green-500 hover:bg-green-600 text-white font-medium p-2 rounded-md"
 		>
 			Run Simulation

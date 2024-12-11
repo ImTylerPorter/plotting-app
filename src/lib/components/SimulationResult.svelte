@@ -2,7 +2,11 @@
 <script lang="ts">
 	import type { SimulationResultData } from '$lib/types';
 
-	export let result: SimulationResultData;
+	interface Props {
+		result: SimulationResultData;
+	}
+
+	let { result }: Props = $props();
 </script>
 
 <div class="bg-gray-800 rounded-lg shadow-lg p-6">

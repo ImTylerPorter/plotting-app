@@ -13,22 +13,26 @@
 		SimulateEventDetail
 	} from '$lib/types';
 
-	export let data: {
+	interface Props {
+		data: {
 		points: BiodegradationSample[];
 		materialTypes: string[];
 		environments: string[];
 	};
+	}
+
+	let { data }: Props = $props();
 
 	let points: BiodegradationSample[] = data.points;
-	let filteredPoints: BiodegradationSample[] = points;
+	let filteredPoints: BiodegradationSample[] = $state(points);
 	let materialTypes: string[] = data.materialTypes;
 	let environments: string[] = data.environments;
 
-	let selectedSample: BiodegradationSample | null = null;
-	let hoveredSample: BiodegradationSample | null = null;
-	let isLoading: boolean = false;
-	let simulationResult: SimulationResultData | null = null;
-	let toastMessage: string | null = null;
+	let selectedSample: BiodegradationSample | null = $state(null);
+	let hoveredSample: BiodegradationSample | null = $state(null);
+	let isLoading: boolean = $state(false);
+	let simulationResult: SimulationResultData | null = $state(null);
+	let toastMessage: string | null = $state(null);
 
 	let eventSource: EventSource | null = null;
 

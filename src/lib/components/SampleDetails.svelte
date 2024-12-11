@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { BiodegradationSample } from '$lib/types';
 
-	export let sample: BiodegradationSample | null = null;
+	interface Props {
+		sample?: BiodegradationSample | null;
+	}
+
+	let { sample = null }: Props = $props();
 </script>
 
 {#if sample}
