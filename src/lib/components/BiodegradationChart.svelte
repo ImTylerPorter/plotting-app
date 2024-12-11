@@ -29,7 +29,7 @@
 			mode: 'markers',
 			type: 'scatter',
 			marker: {
-				size: 10,
+				size: window.innerWidth < 768 ? 6 : 10, // Adjust marker size for small screens
 				color: data.map((d) => d.temperature_c),
 				colorscale: 'Viridis',
 				showscale: true,
@@ -48,56 +48,33 @@
 			yaxis: { title: 'Degradation (%)' },
 			plot_bgcolor: 'rgba(0,0,0,0)',
 			paper_bgcolor: 'rgba(0,0,0,0)',
-			font: { color: '#fff' }
+			font: { color: '#fff', size: window.innerWidth < 768 ? 10 : 12 },
+			margin: { l: 40, r: 20, t: 40, b: 40 }
 		};
 
-		// Create or update the chart
-		Plotly.newPlot(chartDiv, [trace], layout, { responsive: true }).then(() => {
-			// Use Plotly's graph instance for event listeners
-			(chartDiv as any).on('plotly_click', (event: any) => {
-				if (event.points && event.points.length > 0) {
-					const point = event.points[0];
-					const sample = data[point.pointIndex];
-					onPointClick(sample);
-				}
-			});
+		const config = {
+			responsive: true // Add this here
+		};
 
-			(chartDiv as any).on('plotly_hover', (event: any) => {
-				if (event.points && event.points.length > 0) {
-					const point = event.points[0];
-					const sample = data[point.pointIndex];
-					onHover(sample);
-				}
-			});
-
-			(chartDiv as any).on('plotly_unhover', () => {
-				onHover(null);
-			});
-		});
+		Plotly.newPlot(chartDiv, [trace], layout, config); // Pass config as the fourth argument
 	}
 
 	onMount(() => {
-		let cleanup: (() => void) | undefined;
-
 		(async () => {
 			await loadPlotly();
 			if (chartDiv && data && Plotly) {
 				updateChart();
-				cleanup = () => {
-					if (Plotly && chartDiv) {
-						Plotly.purge(chartDiv);
-					}
-				};
+				window.addEventListener('resize', updateChart); // Re-render on resize
 			}
 		})();
 
-		// Return cleanup function synchronously
 		return () => {
-			if (cleanup) {
-				cleanup();
+			if (chartDiv && Plotly) {
+				Plotly.purge(chartDiv);
 			}
+			window.removeEventListener('resize', updateChart);
 		};
 	});
 </script>
 
-<div bind:this={chartDiv} class="w-full h-[600px]"></div>
+<div bind:this={chartDiv} class="w-full h-[300px] sm:h-[600px]"></div>
