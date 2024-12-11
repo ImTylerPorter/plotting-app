@@ -25,9 +25,9 @@
 {#if visible}
 	<div
 		transition:fade
-		class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg flex items-center"
+		class="fixed bottom-4 right-4 bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center"
 	>
-		<span>{message}</span>
+		<span class="font-bold">{message}</span>
 		<button onclick={() => (visible = false)} class="ml-2">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
