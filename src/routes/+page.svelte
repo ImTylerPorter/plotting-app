@@ -44,6 +44,7 @@
 				(!material || d.material_type === material) &&
 				(!environment || d.environment === environment)
 		);
+		console.log('Filtered Points:', filteredPoints); // Debugging
 	}
 
 	// Simulation logic
