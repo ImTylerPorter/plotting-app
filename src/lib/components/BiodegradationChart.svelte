@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { onMount } from 'svelte';
 	import type { BiodegradationSample } from '$lib/types';
 	import { browser } from '$app/environment';
@@ -13,7 +11,7 @@
 
 	let { data = [], onPointClick, onHover }: Props = $props();
 
-	let chartDiv: HTMLDivElement = $state();
+	let chartDiv: HTMLDivElement | undefined = $state();
 	let Plotly: any = $state();
 
 	async function loadPlotly() {
@@ -23,7 +21,7 @@
 	}
 
 	function updateChart() {
-		if (!Plotly) return;
+		if (!Plotly || !chartDiv) return;
 
 		const trace: Partial<Plotly.ScatterData> = {
 			x: data.map((d) => d.time_days),
@@ -86,7 +84,7 @@
 			if (chartDiv && data && Plotly) {
 				updateChart();
 				cleanup = () => {
-					if (Plotly) {
+					if (Plotly && chartDiv) {
 						Plotly.purge(chartDiv);
 					}
 				};
@@ -99,11 +97,6 @@
 				cleanup();
 			}
 		};
-	});
-	run(() => {
-		if (chartDiv && data && Plotly) {
-			updateChart();
-		}
 	});
 </script>
 

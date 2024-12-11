@@ -15,10 +15,10 @@
 
 	interface Props {
 		data: {
-		points: BiodegradationSample[];
-		materialTypes: string[];
-		environments: string[];
-	};
+			points: BiodegradationSample[];
+			materialTypes: string[];
+			environments: string[];
+		};
 	}
 
 	let { data }: Props = $props();
@@ -153,7 +153,6 @@
 				onFilter={handleFilter}
 				onSimulate={handleSimulation}
 			/>
-			<SampleDetails sample={selectedSample || hoveredSample} />
 			{#if isLoading}
 				<div class="bg-gray-800 rounded-lg shadow-lg p-6">
 					<p class="text-center">Running simulation...</p>
@@ -162,6 +161,7 @@
 			{#if simulationResult}
 				<SimulationResult result={simulationResult} />
 			{/if}
+			<SampleDetails sample={selectedSample || hoveredSample} />
 		</div>
 	</div>
 	{#if toastMessage}
