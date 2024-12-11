@@ -1,4 +1,3 @@
-<!-- src/routes/+page.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import BiodegradationChart from '$lib/components/BiodegradationChart.svelte';
@@ -13,6 +12,7 @@
 		SimulateEventDetail
 	} from '$lib/types';
 
+	// Props from parent
 	interface Props {
 		data: {
 			points: BiodegradationSample[];
@@ -23,28 +23,30 @@
 
 	let { data }: Props = $props();
 
-	let points: BiodegradationSample[] = data.points;
-	let filteredPoints: BiodegradationSample[] = $state(points);
-	let materialTypes: string[] = data.materialTypes;
-	let environments: string[] = data.environments;
-
-	let selectedSample: BiodegradationSample | null = $state(null);
-	let hoveredSample: BiodegradationSample | null = $state(null);
-	let isLoading: boolean = $state(false);
-	let simulationResult: SimulationResultData | null = $state(null);
-	let toastMessage: string | null = $state(null);
+	// State variables
+	let points = $state(data.points);
+	let filteredPoints = $state(data.points);
+	let materialTypes = $state(data.materialTypes);
+	let environments = $state(data.environments);
+	let selectedSample = $state<BiodegradationSample | null>(null);
+	let hoveredSample = $state<BiodegradationSample | null>(null);
+	let isLoading = $state(false);
+	let simulationResult = $state<SimulationResultData | null>(null);
+	let toastMessage = $state<string | null>(null);
 
 	let eventSource: EventSource | null = null;
 
+	// Filtering logic
 	function handleFilter(eventDetail: FilterEventDetail) {
 		const { material, environment } = eventDetail;
 		filteredPoints = points.filter(
 			(d) =>
-				(material ? d.material_type === material : true) &&
-				(environment ? d.environment === environment : true)
+				(!material || d.material_type === material) &&
+				(!environment || d.environment === environment)
 		);
 	}
 
+	// Simulation logic
 	async function handleSimulation(eventDetail: SimulateEventDetail) {
 		if (!selectedSample) {
 			toastMessage = 'Please select a sample by clicking on a data point.';
@@ -52,7 +54,6 @@
 		}
 
 		const { time_days } = eventDetail;
-
 		isLoading = true;
 		simulationResult = null;
 
@@ -79,6 +80,8 @@
 			isLoading = false;
 		}
 	}
+
+	// Click and hover events
 	function handlePointClick(sample: BiodegradationSample) {
 		selectedSample = sample;
 		simulationResult = null;
@@ -88,6 +91,7 @@
 		hoveredSample = sample;
 	}
 
+	// Realtime updates via EventSource
 	onMount(() => {
 		eventSource = new EventSource('/api/realtime');
 
@@ -104,10 +108,11 @@
 					points = points.filter((p) => p.sample_id !== sample.sample_id);
 				}
 
+				// Update filteredPoints based on new data
 				filteredPoints = points.filter(
 					(d) =>
-						(materialTypes.includes(d.material_type) || materialTypes.length === 0) &&
-						(environments.includes(d.environment) || environments.length === 0)
+						(!materialTypes.length || materialTypes.includes(d.material_type)) &&
+						(!environments.length || environments.includes(d.environment))
 				);
 			} catch (err) {
 				console.error('Error parsing SSE data:', err);
