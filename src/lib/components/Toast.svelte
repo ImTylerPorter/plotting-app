@@ -28,7 +28,7 @@
 		class="fixed bottom-4 right-4 bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center"
 	>
 		<span class="font-bold">{message}</span>
-		<button onclick={() => (visible = false)} class="ml-2">
+		<button aria-label={message} onclick={() => (visible = false)} class="ml-2">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				class="h-5 w-5"

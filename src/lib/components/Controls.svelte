@@ -9,12 +9,7 @@
 		onSimulate: (detail: SimulateEventDetail) => void;
 	}
 
-	let {
-		materialTypes,
-		environments,
-		onFilter,
-		onSimulate
-	}: Props = $props();
+	let { materialTypes, environments, onFilter, onSimulate }: Props = $props();
 
 	let selectedMaterial = $state('');
 	let selectedEnvironment = $state('');
@@ -34,8 +29,9 @@
 
 	<!-- Filter Controls -->
 	<div class="space-y-4">
-		<label class="block text-lg font-medium">Material</label>
+		<label for="material" class="block text-lg font-medium">Material</label>
 		<select
+			name="material"
 			bind:value={selectedMaterial}
 			class="w-full p-2 bg-gray-700 rounded-md focus:ring focus:ring-blue-500"
 		>
@@ -45,8 +41,9 @@
 			{/each}
 		</select>
 
-		<label class="block text-lg font-medium">Environment</label>
+		<label for="environment" class="block text-lg font-medium">Environment</label>
 		<select
+			name="environment"
 			bind:value={selectedEnvironment}
 			class="w-full p-2 bg-gray-700 rounded-md focus:ring focus:ring-blue-500"
 		>

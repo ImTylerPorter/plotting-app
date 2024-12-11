@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import type { SimulationParams, SimulationResult } from '$lib/types';
+import type { SimulationParams, SimulationResultData } from '$lib/types';
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request }) => {
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const simulationResult: SimulationResult = {
+    const simulationResult: SimulationResultData = {
       sample_id,
       predicted_degradation_pct: parseFloat(predicted_degradation_pct.toFixed(2)),
       simulation_time_days: simulation_params.time_days,
