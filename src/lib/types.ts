@@ -1,5 +1,3 @@
-// src/lib/types.ts
-
 export interface BiodegradationSample {
   sample_id: number;
   material_type: string;
@@ -14,19 +12,17 @@ export interface SimulationParams {
   time_days: number;
 }
 
-export interface SimulationResult {
+export interface SimulationResultData {
   sample_id: number;
   predicted_degradation_pct: number;
   simulation_time_days: number;
 }
 
-// Define interfaces for event payloads
 export interface FilterEventDetail {
-  material: string;
-  environment: string;
+  material: string | null;
+  environment: string | null;
 }
 
 export interface SimulateEventDetail {
   time_days: number;
 }
-

@@ -1,134 +1,103 @@
-<!-- src/lib/components/BiodegradationChart.svelte -->
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { BiodegradationSample } from '$lib/types';
+	import { browser } from '$app/environment';
 
-	// Props
 	export let data: BiodegradationSample[] = [];
 	export let onPointClick: (sample: BiodegradationSample) => void;
-	export let onHover: (sample: BiodegradationSample | null) => void; // New callback prop
+	export let onHover: (sample: BiodegradationSample | null) => void;
 
-	// SVG dimensions and margins
-	const width = 800;
-	const height = 600;
-	const margin = { top: 50, right: 50, bottom: 50, left: 70 };
+	let chartDiv: HTMLDivElement;
+	let Plotly: any;
 
-	// Data ranges
-	const xValues = data.map((d) => d.time_days);
-	const yValues = data.map((d) => d.degradation_pct);
-
-	const xMin = Math.min(...xValues) - 5;
-	const xMax = Math.max(...xValues) + 5;
-	const yMin = Math.min(...yValues) - 5;
-	const yMax = Math.max(...yValues) + 5;
-
-	// Scaling functions
-	const scaleX = (value: number) =>
-		((value - xMin) / (xMax - xMin)) * (width - margin.left - margin.right) + margin.left;
-
-	const scaleY = (value: number) =>
-		height -
-		margin.bottom -
-		((value - yMin) / (yMax - yMin)) * (height - margin.top - margin.bottom);
-
-	// Track the currently hovered sample
-	let currentHoveredSample: BiodegradationSample | null = null;
-
-	// Handle mouse events
-	function handleMouseOver(sample: BiodegradationSample) {
-		currentHoveredSample = sample;
-		onHover(sample); // Emit the hovered sample
+	async function loadPlotly() {
+		if (browser) {
+			Plotly = await import('plotly.js-dist-min');
+		}
 	}
 
-	function handleMouseOut() {
-		currentHoveredSample = null;
-		onHover(null); // Emit null when not hovering
+	$: if (chartDiv && data && Plotly) {
+		updateChart();
 	}
+
+	function updateChart() {
+		if (!Plotly) return;
+
+		const trace: Partial<Plotly.ScatterData> = {
+			x: data.map((d) => d.time_days),
+			y: data.map((d) => d.degradation_pct),
+			mode: 'markers',
+			type: 'scatter',
+			marker: {
+				size: 10,
+				color: data.map((d) => d.temperature_c),
+				colorscale: 'Viridis',
+				showscale: true,
+				colorbar: { title: 'Temperature (°C)' }
+			},
+			text: data.map(
+				(d) =>
+					`Sample ID: ${d.sample_id}<br>Material: ${d.material_type}<br>Environment: ${d.environment}`
+			),
+			hoverinfo: 'text'
+		};
+
+		const layout: Partial<Plotly.Layout> = {
+			title: 'Biodegradation Over Time',
+			xaxis: { title: 'Time (Days)' },
+			yaxis: { title: 'Degradation (%)' },
+			plot_bgcolor: 'rgba(0,0,0,0)',
+			paper_bgcolor: 'rgba(0,0,0,0)',
+			font: { color: '#fff' }
+		};
+
+		// Create or update the chart
+		Plotly.newPlot(chartDiv, [trace], layout, { responsive: true }).then(() => {
+			// Use Plotly's graph instance for event listeners
+			(chartDiv as any).on('plotly_click', (event: any) => {
+				if (event.points && event.points.length > 0) {
+					const point = event.points[0];
+					const sample = data[point.pointIndex];
+					onPointClick(sample);
+				}
+			});
+
+			(chartDiv as any).on('plotly_hover', (event: any) => {
+				if (event.points && event.points.length > 0) {
+					const point = event.points[0];
+					const sample = data[point.pointIndex];
+					onHover(sample);
+				}
+			});
+
+			(chartDiv as any).on('plotly_unhover', () => {
+				onHover(null);
+			});
+		});
+	}
+
+	onMount(() => {
+		let cleanup: (() => void) | undefined;
+
+		(async () => {
+			await loadPlotly();
+			if (chartDiv && data && Plotly) {
+				updateChart();
+				cleanup = () => {
+					if (Plotly) {
+						Plotly.purge(chartDiv);
+					}
+				};
+			}
+		})();
+
+		// Return cleanup function synchronously
+		return () => {
+			if (cleanup) {
+				cleanup();
+			}
+		};
+	});
 </script>
 
-<svg {width} {height} style="border: 1px solid #ccc; background-color: #f9f9f9;">
-	<!-- X Axis -->
-	<line
-		x1={margin.left}
-		y1={height - margin.bottom}
-		x2={width - margin.right}
-		y2={height - margin.bottom}
-		stroke="black"
-	/>
-	<!-- Y Axis -->
-	<line
-		x1={margin.left}
-		y1={margin.top}
-		x2={margin.left}
-		y2={height - margin.bottom}
-		stroke="black"
-	/>
-
-	<!-- X Axis Label -->
-	<text
-		x={(width - margin.left - margin.right) / 2 + margin.left}
-		y={height - margin.bottom + 40}
-		text-anchor="middle"
-		font-size="16"
-		font-weight="bold"
-	>
-		Time (Days)
-	</text>
-
-	<!-- Y Axis Label -->
-	<text
-		transform={`translate(${margin.left - 50}, ${(height - margin.top - margin.bottom) / 2 + margin.top}) rotate(-90)`}
-		text-anchor="middle"
-		font-size="16"
-		font-weight="bold"
-	>
-		Degradation (%)
-	</text>
-
-	<!-- X Grid Lines and Ticks -->
-	{#each Array.from({ length: 6 }, (_, i) => xMin + (i * (xMax - xMin)) / 5) as tick}
-		<line
-			x1={scaleX(tick)}
-			y1={margin.top}
-			x2={scaleX(tick)}
-			y2={height - margin.bottom}
-			stroke="#e0e0e0"
-			stroke-dasharray="4 2"
-		/>
-		<text x={scaleX(tick)} y={height - margin.bottom + 20} text-anchor="middle" font-size="12">
-			{tick}
-		</text>
-	{/each}
-
-	<!-- Y Grid Lines and Ticks -->
-	{#each Array.from({ length: 6 }, (_, i) => yMin + (i * (yMax - yMin)) / 5) as tick}
-		<line
-			x1={margin.left}
-			y1={scaleY(tick)}
-			x2={width - margin.right}
-			y2={scaleY(tick)}
-			stroke="#e0e0e0"
-			stroke-dasharray="4 2"
-		/>
-		<text x={margin.left - 10} y={scaleY(tick) + 4} text-anchor="end" font-size="12">
-			{tick.toFixed(2)}
-		</text>
-	{/each}
-
-	<!-- Data Points -->
-	{#each data as sample}
-		<circle
-			cx={scaleX(sample.time_days)}
-			cy={scaleY(sample.degradation_pct)}
-			r={currentHoveredSample && currentHoveredSample.sample_id === sample.sample_id ? 10 : 8}
-			fill={currentHoveredSample && currentHoveredSample.sample_id === sample.sample_id
-				? 'orange'
-				: 'steelblue'}
-			stroke="black"
-			stroke-width="1"
-			on:click={() => onPointClick(sample)}
-			on:mouseover={() => handleMouseOver(sample)}
-			on:mouseout={handleMouseOut}
-			style="cursor: pointer; transition: r 0.2s, fill 0.2s;"
-		/>
-	{/each}
-</svg>
+<div bind:this={chartDiv} class="w-full h-[600px]" />
